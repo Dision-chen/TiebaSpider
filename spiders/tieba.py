@@ -1,4 +1,5 @@
 import scrapy
+import requests
 from TiebaSpider.items import TiebaspiderItem
 
 
@@ -31,10 +32,13 @@ class TiebaSpider(scrapy.Spider):
         for div in div_list:
             item["content"] = div.xpath("./text()").extract_first()
             item["content_img"] = div.xpath(".//img/@src").extract()
+            item["content_img"] = [requests.utils.unquote(i).split("src=")[-1] for i in item["content_img"]]
             yield item
         next_url = response.xpath("//a[text()='下一页']/@href").extract_first()
         if next_url is not None:
              yield scrapy.Request(
                  "http://tieba.baidu.com/mo/q----,sz@320_240-1-3---2/" + next_url,
-                 callback=self.parse_detail)
-
+                 callback=self.parse_detail，
+                 meta={'item': item}
+                 )
+             
